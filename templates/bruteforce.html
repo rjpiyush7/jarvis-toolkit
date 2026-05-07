@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brute Force Simulator — JARVIS Toolkit</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Rajdhani:wght@300;400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --cyan:#00f7ff;
+  --cyan-dim:rgba(0,247,255,0.15);
+  --cyan-mid:rgba(0,247,255,0.4);
+  --cyan-glow:0 0 20px rgba(0,247,255,0.6);
+  --bg:#000608;
+  --panel:rgba(0,20,35,0.75);
+  --border:rgba(0,247,255,0.25);
+  --text-muted:rgba(0,247,255,0.5);
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+
+body{
+  font-family:'Rajdhani',sans-serif;
+  background:var(--bg);
+  color:var(--cyan);
+  display:flex;
+  justify-content:center;
+  padding:40px 20px;
+}
+
+/* PANEL */
+.panel{
+  width:100%;
+  max-width:600px;
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:30px;
+  box-shadow:0 0 40px rgba(0,0,0,0.6);
+}
+
+/* HEADER */
+.panel-title{
+  font-family:'Orbitron';
+  font-size:24px;
+  font-weight:800;
+  text-shadow:var(--cyan-glow);
+  margin-bottom:10px;
+}
+
+.panel-desc{
+  font-size:13px;
+  color:var(--text-muted);
+  margin-bottom:20px;
+}
+
+/* AI TICKER */
+.ai-ticker{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  background:rgba(0,247,255,0.05);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:10px 16px;
+  margin-bottom:20px;
+  font-size:12px;
+}
+
+.dot{
+  width:7px;height:7px;
+  border-radius:50%;
+  background:var(--cyan);
+  box-shadow:0 0 8px var(--cyan);
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse{
+  0%,100%{transform:scale(1);}
+  50%{transform:scale(1.5);}
+}
+
+/* INPUT */
+input{
+  width:100%;
+  padding:14px;
+  margin-top:10px;
+  background:rgba(0,0,0,0.4);
+  border:1px solid var(--border);
+  color:var(--cyan);
+  border-radius:10px;
+}
+
+button{
+  width:100%;
+  margin-top:15px;
+  padding:14px;
+  border:1px solid var(--cyan-mid);
+  background:transparent;
+  color:var(--cyan);
+  cursor:pointer;
+  border-radius:10px;
+}
+
+button:hover{
+  background:var(--cyan);
+  color:black;
+}
+
+/* BOXES */
+.box{
+  margin-top:20px;
+  padding:15px;
+  border:1px solid var(--border);
+  border-radius:10px;
+  font-family:'Share Tech Mono';
+}
+
+/* BACK */
+.back{
+  margin-top:20px;
+  display:inline-block;
+  color:var(--text-muted);
+  text-decoration:none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="panel">
+
+  <div class="panel-title">🔓 Brute Force Simulator</div>
+  <div class="panel-desc">Simulates password cracking attempts in controlled environment</div>
+
+  <!-- AI -->
+  <div class="ai-ticker">
+    <div class="dot"></div>
+    <span id="aiMsg">System idle...</span>
+  </div>
+
+  <!-- INPUT -->
+  <input type="text" id="pass" placeholder="Enter password">
+  <button onclick="start()">Start Attack</button>
+
+  <!-- LIVE OUTPUT -->
+  <div class="box" id="status">Waiting...</div>
+  <div class="box" id="attempts">Attempts: 0</div>
+  <div style="display:flex; gap:10px; margin-top:15px;">
+    <button id="pauseBtn" onclick="pauseResume()">Pause</button>
+    <button id="stopBtn" onclick="stopAttack()">Stop</button>
+    <button id="resetBtn" onclick="resetAll()">Reset</button>
+  </div>
+  <a href="index.html" class="back">⬅ Back</a>
+
+</div>
+
+<script>
+
+    let chars = "abc123";
+    let attempts = 0;
+    let running = false;
+    let paused = false;
+    let stopFlag = false;
+    let sessionId = 0;
+    
+    const aiEl = document.getElementById("aiMsg");
+    const statusBox = document.getElementById("status");
+    const attemptsBox = document.getElementById("attempts");
+    
+    const aiMsgs = [
+      "Running dictionary attack...",
+      "Testing password combinations...",
+      "Analyzing entropy...",
+      "Injecting brute force module..."
+    ];
+    
+    function updateAI(){
+      aiEl.textContent = aiMsgs[Math.floor(Math.random()*aiMsgs.length)];
+    }
+    
+    function sleep(ms){
+      return new Promise(r => setTimeout(r, ms));
+    }
+    
+    async function bruteForce(target, current = "", id){
+    
+      // ❌ invalid session check (CRITICAL FIX)
+      if(id !== sessionId) return;
+      if(stopFlag || !running) return;
+    
+      // ⏸ PAUSE HANDLER
+      while(paused){
+        if(id !== sessionId || stopFlag) return;
+        await sleep(100);
+      }
+    
+      // success check
+      if(current === target){
+        if(id !== sessionId) return;
+        statusBox.innerText = "CRACKED: " + target;
+        return true;
+      }
+    
+      if(current.length >= target.length) return false;
+    
+      for(let c of chars){
+    
+        if(id !== sessionId || stopFlag) return;
+    
+        // pause inside loop
+        while(paused){
+          if(id !== sessionId || stopFlag) return;
+          await sleep(100);
+        }
+    
+        attempts++;
+    
+        // ❌ prevent stale UI updates
+        if(id === sessionId){
+          attemptsBox.innerText = "Attempts: " + attempts;
+          statusBox.innerText = "Trying: " + current + c;
+          updateAI();
+        }
+    
+        await sleep(50);
+    
+        if(await bruteForce(target, current + c, id)) return true;
+      }
+    }
+    
+    function pauseResume(){
+    
+    if(!running || stopFlag) return;
+    
+    paused = !paused;
+    
+    const btn = document.getElementById("pauseBtn");
+    
+    if(paused){
+      btn.innerText = "Resume";
+      aiEl.textContent = "Attack paused...";
+    } else {
+      btn.innerText = "Pause";
+      aiEl.textContent = "Resuming attack...";
+    }
+    
+    updateButtonsState();
+    }
+    
+    function stopAttack(){
+    
+    stopFlag = true;
+    running = false;
+    paused = false;
+    
+    // invalidate old execution immediately
+    sessionId++;
+    
+    aiEl.textContent = "Attack stopped.";
+    statusBox.innerText += " (STOPPED)";
+    
+    updateButtonsState();
+    }
+    
+    function resetAll(){
+    
+    stopFlag = false;
+    running = false;
+    paused = false;
+    
+    // invalidate old async loops
+    sessionId++;
+    
+    attempts = 0;
+    
+    document.getElementById("pass").value = "";
+    
+    statusBox.innerText = "Waiting...";
+    attemptsBox.innerText = "Attempts: 0";
+    
+    aiEl.textContent = "System reset.";
+    
+    document.getElementById("pauseBtn").innerText = "Pause";
+    
+    updateButtonsState();
+    }
+    
+    function updateButtonsState(){
+    
+    const pauseBtn = document.getElementById("pauseBtn");
+    const stopBtn = document.getElementById("stopBtn");
+    
+    if(running && !paused && !stopFlag){
+      pauseBtn.disabled = false;
+      stopBtn.disabled = false;
+    }
+    
+    if(paused){
+      pauseBtn.disabled = false;
+      stopBtn.disabled = true;
+    }
+    
+    if(stopFlag){
+      pauseBtn.disabled = true;
+      stopBtn.disabled = true;
+    }
+    }
+    
+    function start(){
+    
+    let pass = document.getElementById("pass").value;
+    
+    attempts = 0;
+    
+    // NEW SESSION (IMPORTANT ORDER FIX)
+    sessionId++;
+    
+    running = true;
+    paused = false;
+    stopFlag = false;
+    
+    statusBox.innerText = "Starting attack...";
+    attemptsBox.innerText = "Attempts: 0";
+    
+    bruteForce(pass, "", sessionId);
+    
+    updateButtonsState();
+    }
+    
+    </script>
+
+</body>
+</html>

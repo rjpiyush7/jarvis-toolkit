@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XSS Simulation — JARVIS Toolkit</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Rajdhani:wght@300;400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --cyan:#00f7ff;
+  --cyan-mid:rgba(0,247,255,0.4);
+  --cyan-glow:0 0 20px rgba(0,247,255,0.6);
+  --bg:#000608;
+  --panel:rgba(0,20,35,0.75);
+  --border:rgba(0,247,255,0.25);
+  --text-muted:rgba(0,247,255,0.5);
+}
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+body{
+  font-family:'Rajdhani',sans-serif;
+  background:var(--bg);
+  color:var(--cyan);
+  display:flex;
+  justify-content:center;
+  padding:40px 20px;
+}
+
+/* PANEL */
+.panel{
+  width:100%;
+  max-width:650px;
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:30px;
+  box-shadow:0 0 40px rgba(0,0,0,0.6);
+}
+
+/* TITLE */
+.title{
+  font-family:'Orbitron';
+  font-size:24px;
+  font-weight:800;
+  text-shadow:var(--cyan-glow);
+  margin-bottom:10px;
+}
+
+.desc{
+  font-size:13px;
+  color:var(--text-muted);
+  margin-bottom:20px;
+}
+
+/* WARNING */
+.warning{
+  padding:12px;
+  border:1px solid var(--border);
+  border-radius:10px;
+  background:rgba(0,247,255,0.05);
+  font-size:12px;
+  margin-bottom:20px;
+}
+
+/* INPUT */
+input{
+  width:100%;
+  padding:14px;
+  background:rgba(0,0,0,0.4);
+  border:1px solid var(--border);
+  color:var(--cyan);
+  border-radius:10px;
+  font-family:'Share Tech Mono';
+  outline:none;
+  margin-top:10px;
+}
+
+/* BUTTON */
+button{
+  width:100%;
+  margin-top:15px;
+  padding:14px;
+  border:1px solid var(--cyan-mid);
+  background:transparent;
+  color:var(--cyan);
+  cursor:pointer;
+  border-radius:10px;
+  font-family:'Orbitron';
+  text-transform:uppercase;
+  letter-spacing:2px;
+}
+
+button:hover{
+  background:var(--cyan);
+  color:black;
+  box-shadow:var(--cyan-glow);
+}
+
+/* OUTPUT */
+.output{
+  margin-top:20px;
+  padding:15px;
+  border:1px solid var(--border);
+  border-radius:10px;
+  background:rgba(0,0,0,0.3);
+  font-family:'Share Tech Mono';
+  min-height:50px;
+}
+
+/* BACK */
+.back{
+  margin-top:20px;
+  display:inline-block;
+  color:var(--text-muted);
+  text-decoration:none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="panel">
+
+  <div class="title">🧪 XSS Simulation Lab</div>
+  <div class="desc">Demonstrates how unsanitized input can be rendered in DOM</div>
+
+  <div class="warning">
+    ⚠ Educational Simulation Only — Never inject or test scripts on real websites without permission
+  </div>
+
+  <input type="text" id="input" placeholder="Enter payload (e.g. text or HTML)">
+  <button onclick="run()">Execute</button>
+
+  <div class="output" id="output">Output will appear here...</div>
+  <button onclick="resetOutput()">Reset</button>
+  <div style="
+  margin-top:20px;
+  padding:15px;
+  border:1px solid var(--border);
+  border-radius:10px;
+  background:rgba(0,247,255,0.05);
+  font-family:'Rajdhani',sans-serif;
+  font-size:13px;
+  line-height:1.6;
+">
+  <h3 style="font-family:'Orbitron'; margin-bottom:10px;">
+    🧠 What is XSS?
+  </h3>
+
+  <p>
+    XSS (Cross-Site Scripting) is a security problem where a website shows what a user types without checking it properly.
+  </p>
+
+  <br>
+
+  <p><b>⚠ Example 1 (Safe case)</b></p>
+  <p>If you type: <code>Hello World</code><br>
+  It will show: <b>Hello World</b></p>
+
+  <br>
+
+  <p><b>⚠ Example 2 (Unsafe case)</b></p>
+  <p>If you type: <code>&lt;b&gt;Hello&lt;/b&gt;</code><br>
+  It will display: <b>Hello</b> (bold text)</p>
+
+  <br>
+
+  <p><b>⚠ Example 3 (Style injection case)</b></p>
+  <p>If you type: <code>&lt;p style="color:red;"&gt;Red text&lt;/p&gt;</code><br>
+    It will display: <span style="color:red;">Red text</span></p>
+
+    <br>
+
+    <p><b>⚠ Example 4 (Database Injection concept)</b></p>
+<p>
+If a website directly uses user input in a database query without checking it properly.
+</p>
+<p>
+Example input: <code>' OR '1'='1</code>
+</p>
+<p>
+This can trick the system into returning all data instead of checking valid login details.
+</p>
+
+  <p>
+    ❗ This happens because the browser treats input as HTML instead of plain text.
+  </p>
+
+  <br>
+
+  <p>
+    🔐 Always remember: Never trust user input directly — always sanitize it before displaying.
+  </p>
+</div>
+
+  <a class="back" href="index.html">⬅ Back</a>
+
+</div>
+
+<script>
+function run()
+{
+    let val = document.getElementById("input").value;
+    document.getElementById("output").innerHTML = val;
+}
+function resetOutput()
+{
+    document.getElementById("output").innerHTML = "Output will appear here...";
+    document.getElementById("input").value = "";
+    }
+</script>
+
+</body>
+</html>

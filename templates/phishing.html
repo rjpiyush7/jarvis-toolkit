@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phishing Intelligence Dashboard — JARVIS</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --cyan:#00f7ff;
+  --bg:#000608;
+  --panel:rgba(0,20,35,0.75);
+  --border:rgba(0,247,255,0.25);
+  --text-muted:rgba(0,247,255,0.5);
+}
+
+body{
+  margin:0;
+  font-family:'Share Tech Mono', monospace;
+  background:var(--bg);
+  color:var(--cyan);
+  display:flex;
+  justify-content:center;
+  padding:30px;
+}
+
+.panel{
+  width:100%;
+  max-width:800px;
+}
+
+.header{
+  text-align:center;
+  margin-bottom:20px;
+}
+
+.header h1{
+  font-family:'Orbitron';
+}
+
+.section{
+  margin-top:20px;
+  padding:15px;
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:var(--panel);
+}
+
+.section-title{
+  font-family:'Orbitron';
+  margin-bottom:10px;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:10px;
+}
+
+.card{
+  padding:12px;
+  border:1px solid var(--border);
+  border-radius:10px;
+  cursor:pointer;
+  background:rgba(0,247,255,0.05);
+  transition:0.3s;
+}
+
+.card:hover{
+  background:rgba(0,247,255,0.15);
+}
+
+.safe{
+  border-color:#00ff99;
+}
+
+.bad{
+  border-color:#ff4d4d;
+}
+
+.popup{
+  display:none;
+  position:fixed;
+  top:0;left:0;
+  width:100%;height:100%;
+  background:rgba(0,0,0,0.85);
+  justify-content:center;
+  align-items:center;
+}
+
+.popup-box{
+  width:400px;
+  padding:20px;
+  border:1px solid var(--cyan);
+  border-radius:12px;
+  background:rgba(0,20,35,0.95);
+}
+
+button{
+  margin-top:10px;
+  padding:10px;
+  width:100%;
+  border:1px solid var(--cyan);
+  background:transparent;
+  color:var(--cyan);
+  cursor:pointer;
+}
+
+button:hover{
+  background:var(--cyan);
+  color:#000;
+}
+</style>
+</head>
+
+<body>
+
+<div class="panel">
+
+  <div class="header">
+    <h1>🧠 Phishing Intelligence Dashboard</h1>
+    <p>Cybersecurity Awareness Training Module</p>
+  </div>
+
+  <!-- INSTAGRAM -->
+  <div class="section">
+    <div class="section-title">📸 Instagram Threat Patterns</div>
+
+    <div class="grid">
+
+      <div class="card bad" onclick="showInfo('Free followers login pages are common scams used to steal credentials.')">
+        🚨 “Gain 10K followers instantly login page”
+      </div>
+
+      <div class="card bad" onclick="showInfo('Urgency messages trick users into logging in quickly without checking URL.')">
+        🚨 “Account will be suspended — login now”
+      </div>
+
+      <div class="card bad" onclick="showInfo('Fake domains mimic Instagram UI to steal credentials.')">
+        🚨 “instagram-secure-login.com”
+      </div>
+
+      <div class="card bad" onclick="showInfo('Prize scams use fake rewards to force login attempts.')">
+        🚨 “Win verified badge contest login”
+      </div>
+
+      <div class="card bad" onclick="showInfo('Cloned login pages are used in phishing kits.')">
+        🚨 “Instagram login clone page”
+      </div>
+
+      <div class="card safe" onclick="showInfo('Official Instagram login always uses https://www.instagram.com')">
+        ✅ Official Instagram login behavior
+      </div>
+
+    </div>
+  </div>
+
+  <!-- GOOGLE -->
+  <div class="section">
+    <div class="section-title">📧 Google Threat Patterns</div>
+
+    <div class="grid">
+
+      <div class="card bad" onclick="showInfo('Fake Google alerts ask users to verify accounts urgently.')">
+        🚨 “Google account suspended login now”
+      </div>
+
+      <div class="card bad" onclick="showInfo('Phishing emails often redirect to fake login pages.')">
+        🚨 “Security alert from Google support”
+      </div>
+
+      <div class="card bad" onclick="showInfo('Lookalike domains trick users (googIe.com vs google.com).')">
+        🚨 “googIe-login-security.com”
+      </div>
+
+      <div class="card bad" onclick="showInfo('Fake cloud storage alerts target Gmail credentials.')">
+        🚨 “Drive storage full login to upgrade”
+      </div>
+
+      <div class="card bad" onclick="showInfo('OAuth phishing tricks users into granting access.')">
+        🚨 “Sign in with Google to continue”
+      </div>
+
+      <div class="card safe" onclick="showInfo('Official Google login always uses accounts.google.com')">
+        ✅ Official Google login behavior
+      </div>
+
+    </div>
+  </div>
+
+  <br>
+  <a href="index.html" style="color:var(--text-muted);">⬅ Back</a>
+
+</div>
+
+<!-- POPUP -->
+<div class="popup" id="popup">
+  <div class="popup-box">
+    <h3>⚠ Awareness Alert</h3>
+    <p id="msg"></p>
+
+    <br>
+    <b>
+      According to cyber analysis, banking apps, social media accounts,
+      cloud storage, and email systems can all be compromised using phishing attacks.
+    </b>
+
+    <button onclick="closePopup()">Understood</button>
+  </div>
+</div>
+
+<script>
+
+function showInfo(text){
+  document.getElementById("popup").style.display="flex";
+  document.getElementById("msg").innerText = text;
+}
+
+function closePopup(){
+  document.getElementById("popup").style.display="none";
+}
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JARVIS — Cyber Awareness Toolkit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cyan: #00f7ff;
+    --cyan-dim: rgba(0, 247, 255, 0.15);
+    --cyan-mid: rgba(0, 247, 255, 0.4);
+    --cyan-glow: 0 0 20px rgba(0,247,255,0.6), 0 0 60px rgba(0,247,255,0.2);
+    --cyan-glow-sm: 0 0 8px rgba(0,247,255,0.5);
+    --bg: #000608;
+    --panel: rgba(0, 20, 35, 0.7);
+    --border: rgba(0, 247, 255, 0.25);
+    --text-muted: rgba(0, 247, 255, 0.5);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Rajdhani', sans-serif;
+    background: var(--bg);
+    color: var(--cyan);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* ── BACKGROUND GRID ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,247,255,0.04) 4px, transparent 10px),
+      linear-gradient(90deg, rgba(0,247,255,0.04) 4px, transparent 10px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+    animation: gridPulse 6s ease-in-out infinite;
+  }
+
+  @keyframes gridPulse {
+    0%,100% { opacity: 0.6; }
+    50% { opacity: 1; }
+  }
+
+  /* ── SCANLINE OVERLAY ── */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.07) 2px,
+      rgba(0,0,0,0.07) 4px
+    );
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── AMBIENT GLOW ORBS ── */
+  .orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: 0;
+    animation: orbFloat 8s ease-in-out infinite;
+  }
+  .orb-1 { width: 400px; height: 400px; background: rgba(0,247,255,0.06); top: -100px; left: -100px; }
+  .orb-2 { width: 300px; height: 300px; background: rgba(0,150,255,0.05); bottom: -50px; right: -50px; animation-delay: -4s; }
+  @keyframes orbFloat {
+    0%,100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-30px) scale(1.05); }
+  }
+
+  /* ── LAYOUT ── */
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px 60px;
+  }
+
+  /* ── HEADER ── */
+  header {
+    position: relative;
+    padding: 40px 0 30px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 40px;
+  }
+
+  .header-badge {
+    display: inline-block;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 4px;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    padding: 4px 16px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+  }
+
+  .logo {
+    font-family: 'Orbitron', sans-serif;
+    font-size: clamp(28px, 5vw, 52px);
+    font-weight: 900;
+    letter-spacing: 8px;
+    text-shadow: var(--cyan-glow);
+    animation: logoPulse 3s ease-in-out infinite;
+    line-height: 1;
+  }
+
+  @keyframes logoPulse {
+    0%,100% { text-shadow: 0 0 20px rgba(0,247,255,0.6), 0 0 60px rgba(0,247,255,0.2); }
+    50% { text-shadow: 0 0 30px rgba(0,247,255,0.9), 0 0 80px rgba(0,247,255,0.4), 0 0 120px rgba(0,247,255,0.1); }
+  }
+
+  .logo span { color: rgba(0,247,255,0.4); font-weight: 400; }
+
+  .subtitle {
+    font-size: 13px;
+    letter-spacing: 3px;
+    color: var(--text-muted);
+    margin-top: 8px;
+    text-transform: uppercase;
+  }
+
+  /* ── AI STATUS BAR ── */
+  .ai-bar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    padding: 12px 24px;
+    margin-bottom: 40px;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: var(--cyan-glow-sm);
+    flex-wrap: wrap;
+  }
+
+  .ai-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--cyan);
+    box-shadow: 0 0 10px var(--cyan);
+    animation: dotPulse 1.5s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+
+  @keyframes dotPulse {
+    0%,100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.4); opacity: 0.6; }
+  }
+
+  .ai-label {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+  }
+
+  .ai-message {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--cyan);
+    flex: 1;
+    min-width: 180px;
+    transition: opacity 0.5s ease;
+  }
+
+  .ai-stats {
+    display: flex;
+    gap: 24px;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  .stat {
+    text-align: center;
+  }
+
+  .stat-val {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    display: block;
+  }
+
+  .stat-lbl {
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+
+  /* ── SECTION LABEL ── */
+  .section-label {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--border), transparent);
+  }
+
+  /* ── GRID ── */
+  .modules-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+  }
+
+  /* ── MODULE CARD ── */
+  .module {
+    position: relative;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    cursor: pointer;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.3s ease, border-color 0.3s ease;
+    overflow: hidden;
+    text-decoration: none;
+    display: block;
+    color: inherit;
+  }
+
+  .module::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    background: radial-gradient(circle at 30% 30%, rgba(0,247,255,0.08) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .module::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--cyan-mid), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .module:hover {
+    transform: translateY(-6px) scale(1.02);
+    border-color: var(--cyan-mid);
+    box-shadow: 0 0 30px rgba(0,247,255,0.25), 0 20px 40px rgba(0,0,0,0.5);
+  }
+
+  .module:hover::before,
+  .module:hover::after { opacity: 1; }
+
+  /* Corner accents */
+  .module .corner {
+    position: absolute;
+    width: 12px; height: 12px;
+    border-color: var(--cyan);
+    border-style: solid;
+    opacity: 0.4;
+    transition: opacity 0.3s ease;
+  }
+  .module:hover .corner { opacity: 1; }
+  .corner.tl { top: 8px; left: 8px; border-width: 1px 0 0 1px; }
+  .corner.tr { top: 8px; right: 8px; border-width: 1px 1px 0 0; }
+  .corner.bl { bottom: 8px; left: 8px; border-width: 0 0 1px 1px; }
+  .corner.br { bottom: 8px; right: 8px; border-width: 0 1px 1px 0; }
+
+  .module-icon {
+    font-size: 28px;
+    margin-bottom: 14px;
+    display: block;
+    filter: drop-shadow(0 0 8px var(--cyan));
+  }
+
+  .module-id {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+
+  .module-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    text-shadow: var(--cyan-glow-sm);
+  }
+
+  .module-desc {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  .module-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 18px;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+
+  .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--cyan);
+    box-shadow: 0 0 6px var(--cyan);
+    animation: dotPulse 2s ease-in-out infinite;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center;
+    padding: 30px 0 0;
+    border-top: 1px solid var(--border);
+    margin-top: 50px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--text-muted);
+  }
+
+  /* ── SCAN BAR ANIMATION ── */
+  @keyframes scanBar {
+    0% { top: 0; }
+    100% { top: 100%; }
+  }
+
+  .scan-line {
+    position: fixed;
+    left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+    opacity: 0.15;
+    animation: scanBar 4s linear infinite;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 600px) {
+    .ai-stats { display: none; }
+    .modules-grid { grid-template-columns: 1fr; }
+    .logo { letter-spacing: 4px; }
+  }
+
+  /* Click flash */
+  .module:active { transform: scale(0.97); }
+
+  /* Nav flash overlay */
+  .nav-flash {
+    position: fixed; inset: 0;
+    background: rgba(0,247,255,0.06);
+    pointer-events: none;
+    opacity: 0;
+    z-index: 999;
+    transition: opacity 0.2s;
+  }
+  .nav-flash.active { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="scan-line"></div>
+<div class="nav-flash" id="navFlash"></div>
+
+<div class="wrapper">
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-badge">J.A.R.V.I.S — v4.2.1</div>
+    <div class="logo">CYBER<span>//</span>TOOLKIT</div>
+    <div class="subtitle">Advanced Threat Analysis &amp; Awareness System</div>
+  </header>
+
+  <!-- AI STATUS BAR -->
+  <div class="ai-bar">
+    <div class="ai-dot"></div>
+    <div class="ai-label">AI Core</div>
+    <div class="ai-message" id="aiMsg">Initializing neural defense matrix...</div>
+    <div class="ai-stats">
+      <div class="stat">
+        <span class="stat-val" id="clockVal">--:--</span>
+        <span class="stat-lbl">Local Time</span>
+      </div>
+      <div class="stat">
+        <span class="stat-val">6</span>
+        <span class="stat-lbl">Modules</span>
+      </div>
+      <div class="stat">
+        <span class="stat-val" style="color:#00ff88;">ACTIVE</span>
+        <span class="stat-lbl">Status</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODULES -->
+  <div class="section-label">Security Modules</div>
+
+  <div class="modules-grid">
+
+    <a class="module" href="password.html" onclick="flash()">
+      <div class="corner tl"></div><div class="corner tr"></div>
+      <div class="corner bl"></div><div class="corner br"></div>
+      <span class="module-icon">🔐</span>
+      <div class="module-id">MOD — 01</div>
+      <div class="module-title">Password Checker</div>
+      <div class="module-desc">Analyze password entropy and strength using multi-factor scoring algorithms.</div>
+      <div class="module-status"><span class="status-dot"></span>Online &amp; Ready</div>
+    </a>
+
+    <a class="module" href="url.html" onclick="flash()">
+      <div class="corner tl"></div><div class="corner tr"></div>
+      <div class="corner bl"></div><div class="corner br"></div>
+      <span class="module-icon">🔗</span>
+      <div class="module-id">MOD — 02</div>
+      <div class="module-title">URL Checker</div>
+      <div class="module-desc">Scan and validate URLs for phishing patterns, malicious redirects, and threat signatures.</div>
+      <div class="module-status"><span class="status-dot"></span>Online &amp; Ready</div>
+    </a>
+
+    <a class="module" href="keylogger.html" onclick="flash()">
+      <div class="corner tl"></div><div class="corner tr"></div>
+      <div class="corner bl"></div><div class="corner br"></div>
+      <span class="module-icon">⌨️</span>
+      <div class="module-id">MOD — 03</div>
+      <div class="module-title">Keylogger</div>
+      <div class="module-desc">Demonstrate keystroke capture mechanics for awareness and educational simulation.</div>
+      <div class="module-status"><span class="status-dot"></span>Online &amp; Ready</div>
+    </a>
+
+    <a class="module" href="bruteforce.html" onclick="flash()">
+      <div class="corner tl"></div><div class="corner tr"></div>
+      <div class="corner bl"></div><div class="corner br"></div>
+      <span class="module-icon">💥</span>
+      <div class="module-id">MOD — 04</div>
+      <div class="module-title">Brute Force</div>
+      <div class="module-desc">Simulate credential brute-force attacks to understand dictionary and rainbow table vectors.</div>
+      <div class="module-status"><span class="status-dot"></span>Online &amp; Ready</div>
+    </a>
+
+    <a class="module" href="phishing.html" onclick="flash()">
+      <div class="corner tl"></div><div class="corner tr"></div>
+      <div class="corner bl"></div><div class="corner br"></div>
+      <span class="module-icon">🎣</span>
+      <div class="module-id">MOD — 05</div>
+      <div class="module-title">Phishing Demo</div>
+      <div class="module-desc">Interactive phishing scenario builder to identify and counter social engineering tactics.</div>
+      <div class="module-status"><span class="status-dot"></span>Online &amp; Ready</div>
+    </a>
+
+    <a class="module" href="xss.html" onclick="flash()">
+      <div class="corner tl"></div><div class="corner tr"></div>
+      <div class="corner bl"></div><div class="corner br"></div>
+      <span class="module-icon">💉</span>
+      <div class="module-id">MOD — 06</div>
+      <div class="module-title">XSS Demo</div>
+      <div class="module-desc">Cross-site scripting vulnerability demonstration — inject, observe, and defend in real time.</div>
+      <div class="module-status"><span class="status-dot"></span>Online &amp; Ready</div>
+    </a>
+
+  </div>
+
+  <footer>
+    JARVIS CYBER FRAMEWORK · FOR EDUCATIONAL PURPOSES ONLY · AUTHORIZED PERSONNEL ONLY
+  </footer>
+</div>
+
+<script>
+  // AI rotating messages
+  const messages = [
+    "Scanning threat vectors in real time...",
+    "Analyzing network vulnerabilities...",
+    "Firewall integrity verified. All systems nominal.",
+    "Security level: OPTIMAL. No anomalies detected.",
+    "Passive reconnaissance mode engaged.",
+    "Welcome, operator. All modules online.",
+    "Running entropy analysis on connected nodes...",
+    "Zero-day signature database refreshed.",
+  ];
+  let msgIdx = 0;
+  const msgEl = document.getElementById('aiMsg');
+
+  function cycleMsg() {
+    msgEl.style.opacity = '0';
+    setTimeout(() => {
+      msgIdx = (msgIdx + 1) % messages.length;
+      msgEl.textContent = messages[msgIdx];
+      msgEl.style.opacity = '1';
+    }, 400);
+  }
+  setInterval(cycleMsg, 3500);
+
+  // Live clock
+  function updateClock() {
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2,'0');
+    const m = String(now.getMinutes()).padStart(2,'0');
+    document.getElementById('clockVal').textContent = h + ':' + m;
+  }
+  updateClock();
+  setInterval(updateClock, 30000);
+
+  // Nav flash effect
+  function flash() {
+    const el = document.getElementById('navFlash');
+    el.classList.add('active');
+    setTimeout(() => el.classList.remove('active'), 300);
+  }
+</script>
+</body>
+</html>

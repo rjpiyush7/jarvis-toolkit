@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Keylogger Simulator — JARVIS Toolkit</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Rajdhani:wght@300;400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --cyan:#00f7ff;
+  --cyan-dim:rgba(0,247,255,0.15);
+  --cyan-mid:rgba(0,247,255,0.4);
+  --cyan-glow:0 0 20px rgba(0,247,255,0.6);
+  --bg:#000608;
+  --panel:rgba(0,20,35,0.75);
+  --border:rgba(0,247,255,0.25);
+  --text-muted:rgba(0,247,255,0.5);
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+
+body{
+  font-family:'Rajdhani',sans-serif;
+  background:var(--bg);
+  color:var(--cyan);
+  display:flex;
+  justify-content:center;
+  padding:40px 20px;
+}
+
+/* PANEL */
+.panel{
+  width:100%;
+  max-width:600px;
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:30px;
+  box-shadow:0 0 40px rgba(0,0,0,0.6);
+}
+
+/* HEADER */
+.panel-header{
+  margin-bottom:30px;
+}
+
+.module-tag{
+  font-family:'Orbitron';
+  font-size:9px;
+  letter-spacing:4px;
+  color:var(--text-muted);
+  margin-bottom:8px;
+}
+
+.panel-title{
+  font-family:'Orbitron';
+  font-size:24px;
+  font-weight:800;
+  letter-spacing:2px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  text-shadow:var(--cyan-glow);
+}
+
+.panel-desc{
+  font-size:13px;
+  color:var(--text-muted);
+  margin-top:8px;
+}
+
+/* AI TICKER */
+.ai-ticker{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  background:rgba(0,247,255,0.05);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:10px 16px;
+  margin-bottom:20px;
+  font-size:12px;
+}
+
+.ai-ticker .dot{
+  width:7px;height:7px;
+  border-radius:50%;
+  background:var(--cyan);
+  box-shadow:0 0 8px var(--cyan);
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse{
+  0%,100%{transform:scale(1);}
+  50%{transform:scale(1.5);}
+}
+
+/* INPUT */
+.input-wrap{
+  display:flex;
+  gap:10px;
+}
+
+input{
+  flex:1;
+  padding:14px;
+  background:transparent;
+  border:1px solid var(--border);
+  color:var(--cyan);
+}
+
+button{
+  padding:14px;
+  border:1px solid var(--cyan-mid);
+  background:transparent;
+  color:var(--cyan);
+  cursor:pointer;
+}
+
+button:hover{
+  background:var(--cyan);
+  color:black;
+}
+
+/* RESULT BOX */
+.result{
+  margin-top:20px;
+  padding:15px;
+  border:1px solid var(--border);
+  border-radius:10px;
+  display:none;
+}
+
+/* BACK */
+.back{
+  margin-top:20px;
+  display:inline-block;
+  color:var(--text-muted);
+  text-decoration:none;
+}
+
+.input-group {
+  margin-bottom: 24px;
+}
+
+.check-btn {
+  width: 100%;
+  padding: 14px;
+  background: transparent;
+  border: 1px solid var(--cyan-mid);
+  border-radius: 10px;
+  color: var(--cyan);
+  font-family: 'Orbitron', sans-serif;
+  font-size: 10px;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+}
+
+.check-btn:hover {
+  background: var(--cyan);
+  color: #000;
+  box-shadow: var(--cyan-glow);
+  border-color: var(--cyan);
+}
+
+.input-wrap input {
+  width: 100%;
+  padding: 14px 18px;
+  background: rgba(0,0,0,0.4);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--cyan);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 15px;
+  outline: none;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="panel">
+
+  <div class="panel-header">
+    <div class="module-tag">MODULE — 03 / KEYSTROKE ANALYSIS</div>
+
+    <div class="panel-title">
+      ⌨ Keylogger Simulator
+    </div>
+
+    <div class="panel-desc">
+      Demonstrates how keystrokes can be captured in a controlled environment.
+    </div>
+  </div>
+
+  <!-- AI TICKER -->
+  <div class="ai-ticker">
+    <div class="dot"></div>
+    <span id="aiMsg">Awaiting user input...</span>
+  </div>
+
+<!-- INPUT SECTION -->
+    <div class="input-group">
+        <!-- START BUTTON (TOP) -->
+         <button id="startBtn" class="check-btn">Start Monitoring</button>
+         <!-- INPUT FIELD (BELOW) -->
+          <div class="input-wrap" style="margin-top:15px;">
+            <input type="text" id="keyInput" placeholder="Start typing here..." disabled onkeyup="logKeys()">
+        </div>
+    </div>
+
+  <!-- RESULT -->
+  <div id="resultBox" class="result"></div>
+  <div id="statsBox" class="result" style="display:none; margin-top:10px;">
+    <div>Typing Speed: <span id="wpm">0</span> WPM</div>
+    <div>Total Keys: <span id="totalKeys">0</span></div>
+    <div>Avg Delay: <span id="avgDelay">0</span> ms</div>
+  </div>
+
+  <button id="clearBtn" class="check-btn" style="margin-top:10px;">Clear Logs</button>
+  <div id="heatmapBox" class="result" style="display:none; margin-top:10px;">
+    <div><strong>Key Heatmap:</strong></div>
+    <div id="heatmapKeys" style="margin-top:8px; line-height:1.8;"></div>
+  </div>
+
+  <a href="index.html" class="back">⬅ Back</a>
+
+</div>
+
+<script>
+
+    let monitoring = false;
+    let capturedKeys = "";
+    
+    // stats
+    let totalKeys = 0;
+    let startTime = null;
+    let lastKeyTime = null;
+    let delays = [];
+    let keyFrequency = {};
+    
+    const input = document.getElementById("keyInput");
+    const box = document.getElementById("resultBox");
+    const statsBox = document.getElementById("statsBox");
+    
+    const wpmEl = document.getElementById("wpm");
+    const totalKeysEl = document.getElementById("totalKeys");
+    const avgDelayEl = document.getElementById("avgDelay");
+    
+    const aiEl = document.getElementById("aiMsg");
+
+    const heatmapBox = document.getElementById("heatmapBox");
+    const heatmapKeysEl = document.getElementById("heatmapKeys");
+    
+    const aiMsgs = [
+      "Monitoring keystrokes...",
+      "Capturing input signals...",
+      "Analyzing typing patterns...",
+      "Logging user activity..."
+    ];
+    
+    const idleMsgs = [
+      "Awaiting user input...",
+      "Key capture module idle...",
+      "Input listener ready..."
+    ];
+    
+    let timer;
+    let idx = 0;
+    
+    // Idle animation
+    function startIdle(){
+      clearInterval(timer);
+      timer = setInterval(()=>{
+        idx = (idx+1)%idleMsgs.length;
+        aiEl.textContent = idleMsgs[idx];
+      },3000);
+    }
+    startIdle();
+    
+    
+    // 🔥 KEY CAPTURE + STATS
+    function logKeys(e){
+      if(!monitoring) return;
+    
+      let now = Date.now();
+    
+      if(!startTime) startTime = now;
+    
+      // delay calc
+      if(lastKeyTime){
+        let delay = now - lastKeyTime;
+        delays.push(delay);
+      }
+      lastKeyTime = now;
+      if(e.key.length === 1)
+      {
+        totalKeys++;
+    }
+        
+      let key = e.key;
+    
+      // format keys
+      if(key === " ") key = "[SPACE]";
+      if(key === "Backspace") key = "[BACKSPACE]";
+      if(key === "Enter") key = "[ENTER]";
+      if(key === "Shift") key = "[SHIFT]";
+      if(key === "Control") key = "[CTRL]";
+      if(key === "Alt") key = "[ALT]";
+    
+      capturedKeys += key + " ";
+    
+      // show captured
+      box.style.display = "block";
+      box.innerText = "Captured: " + capturedKeys;
+    
+      // 🔥 STATS CALC
+    
+      // WPM
+      let elapsedMinutes = (now - startTime) / 60000;
+      let cleanText = input.value; // actual typed text
+      let words = cleanText.length / 5;
+      let wpm = elapsedMinutes > 0 ? Math.round(words / elapsedMinutes) : 0;
+    
+      // Avg delay
+      let avgDelay = 0;
+      if(delays.length > 0){
+        avgDelay = Math.round(delays.reduce((a,b)=>a+b,0) / delays.length);
+      }
+    
+      // update UI
+      statsBox.style.display = "block";
+      wpmEl.innerText = wpm;
+      totalKeysEl.innerText = totalKeys;
+      avgDelayEl.innerText = avgDelay;
+    
+      aiEl.textContent = aiMsgs[Math.floor(Math.random()*aiMsgs.length)];
+
+      // count frequency
+      if(e.key.length === 1)
+      {
+        let rawKey = e.key;
+        keyFrequency[rawKey] = (keyFrequency[rawKey] || 0) + 1;
+    }
+      // 🔥 HEATMAP UPDATE
+      let heatmapHTML = "";
+      for (let k in keyFrequency) {
+        let count = keyFrequency[k];
+        // intensity levels
+        let opacity = Math.min(0.2 + count * 0.15, 1);
+        let displayKey = k;
+        if(k === " ") displayKey = "[SPACE]";
+        if(k === "Backspace") displayKey = "[BS]";
+        if(k === "Enter") displayKey = "[ENTER]";
+        
+        let textColor = opacity > 0.5 ? "#000" : "var(--cyan)";
+        heatmapHTML += `<span style="
+        padding:5px 8px;
+        margin:3px;
+        display:inline-block;
+        border:1px solid var(--border);
+        border-radius:6px;
+        background:rgba(0,247,255,${opacity});
+        color:${textColor};
+        font-weight:600;
+        ">${displayKey} (${count})</span>`;
+}
+
+heatmapBox.style.display = "block";
+heatmapKeysEl.innerHTML = heatmapHTML;
+    }
+    
+    
+    // START BUTTON
+    document.getElementById("startBtn").addEventListener("click", () => {
+    
+      monitoring = !monitoring;
+    
+      if (monitoring) {
+        input.disabled = false;
+        input.focus();
+        document.getElementById("startBtn").textContent = "Stop Monitoring";
+    
+        // reset all
+        capturedKeys = "";
+        totalKeys = 0;
+        delays = [];
+        startTime = null;
+        lastKeyTime = null;
+    
+        box.style.display = "block";
+        box.innerText = "Logging started...";
+    
+        statsBox.style.display = "none";
+    
+        clearInterval(timer);
+        aiEl.textContent = "Key capture active...";
+    
+      } else {
+        input.disabled = true;
+        document.getElementById("startBtn").textContent = "Start Monitoring";
+        startIdle();
+      }
+    });
+
+    document.getElementById("clearBtn").addEventListener("click", () => {
+        capturedKeys = "";
+        totalKeys = 0;
+        delays = [];
+        keyFrequency = {};
+        startTime = null;
+        lastKeyTime = null;
+        input.value = ""; // ✅ IMPORTANT
+        box.innerText = "Logs cleared.";
+        statsBox.style.display = "none";
+        document.getElementById("heatmapBox").style.display = "none";
+        document.getElementById("heatmapKeys").innerHTML = "";
+        aiEl.textContent = "Logs reset. Ready for fresh monitoring.";
+});
+    
+    
+    // attach listener
+    input.addEventListener("keydown", logKeys);
+    
+    </script>
+
+</body>
+</html>

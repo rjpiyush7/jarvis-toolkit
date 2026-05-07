@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>URL Checker — JARVIS Toolkit</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Rajdhani:wght@300;400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+<style>
+/* --- SAME ROOT THEME --- */
+:root {
+  --cyan:#00f7ff;
+  --cyan-dim:rgba(0,247,255,0.15);
+  --cyan-mid:rgba(0,247,255,0.4);
+  --cyan-glow:0 0 20px rgba(0,247,255,0.6);
+  --bg:#000608;
+  --panel:rgba(0,20,35,0.75);
+  --border:rgba(0,247,255,0.25);
+  --text-muted:rgba(0,247,255,0.5);
+  --red:#ff2d55;
+  --orange:#ff9f0a;
+  --green:#00ff88;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+
+body{
+  font-family:'Rajdhani',sans-serif;
+  background:var(--bg);
+  color:var(--cyan);
+  display:flex;
+  justify-content:center;
+  padding:40px 20px;
+}
+
+/* PANEL */
+.panel{
+  width:100%;
+  max-width:600px;
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:30px;
+  box-shadow:0 0 40px rgba(0,0,0,0.6);
+}
+
+/* HEADER */
+.title{
+  font-family:'Orbitron';
+  font-size:24px;
+  margin-bottom:10px;
+  text-shadow: var(--cyan-glow);
+}
+
+.desc{
+  color:var(--text-muted);
+  font-size:13px;
+  margin-bottom:20px;
+}
+
+/* INPUT */
+.input-wrap{
+  display:flex;
+  gap:10px;
+}
+
+input{
+  flex:1;
+  padding:14px;
+  background:transparent;
+  border:1px solid var(--border);
+  color:var(--cyan);
+}
+
+button{
+  padding:14px;
+  border:1px solid var(--cyan-mid);
+  background:transparent;
+  color:var(--cyan);
+  cursor:pointer;
+}
+
+button:hover{
+  background:var(--cyan);
+  color:black;
+}
+
+/* RESULT */
+.result{
+  margin-top:20px;
+  padding:15px;
+  border:1px solid var(--border);
+  border-radius:10px;
+  display:none;
+}
+
+.safe{color:var(--green);}
+.warn{color:var(--orange);}
+.danger{color:var(--red);}
+
+/* NAV */
+.back{
+  margin-top:20px;
+  display:inline-block;
+  color:var(--text-muted);
+  text-decoration:none;
+}
+
+/* --- PANEL HEADER (MATCH PASSWORD UI) --- */
+.panel-header {
+  margin-bottom: 30px;
+}
+
+.module-tag {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 9px;
+  letter-spacing: 4px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.panel-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-shadow: var(--cyan-glow);
+}
+
+.panel-title .icon {
+  font-size: 20px;
+}
+
+.panel-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 8px;
+  line-height: 1.5;
+}
+
+/* --- AI TICKER --- */
+.ai-ticker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(0,247,255,0.05);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 16px;
+  margin-bottom: 20px;
+  font-size: 12px;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+}
+
+.ai-ticker .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: 0 0 8px var(--cyan);
+  animation: dotPulse 1.5s infinite;
+}
+
+@keyframes dotPulse {
+  0%,100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.5); opacity: 0.5; }
+}
+
+.result hr {
+  border: none;
+  border-top: 1px solid rgba(0,247,255,0.15);
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="panel">
+
+  <div class="panel-header">
+    <div class="module-tag">MODULE — 02 / THREAT DETECTION</div>
+  
+    <div class="panel-title">
+      <span class="icon">🌐</span>
+      URL Checker
+    </div>
+  
+    <div class="panel-desc">
+      Analyze URLs for phishing patterns, malicious domains, and security risks.
+    </div>
+  </div>
+  <div class="ai-ticker">
+    <div class="dot"></div>
+    <span id="aiMsg">Awaiting URL input for analysis...</span>
+  </div>
+  <div class="input-wrap">
+    <input type="text" id="urlInput" placeholder="Enter URL...">
+    <button onclick="checkURL()">Scan</button>
+  </div>
+
+
+  <div id="resultBox" class="result"></div>
+  <div id="historyBox" class="result" style="display:none;"></div>
+  <a href="index.html" class="back">⬅ Back</a>
+
+</div>
+
+<script>
+    let historyLog = [];
+
+    const idleMsgs = [
+      "Awaiting URL input for analysis...",
+      "Phishing detection engine idle...",
+      "Domain reputation scanner ready...",
+      "Threat intelligence module standby..."
+    ];
+    
+    const scanMsgs = [
+      "Scanning URL structure...",
+      "Checking HTTPS protocol...",
+      "Analyzing domain patterns...",
+      "Detecting phishing keywords..."
+    ];
+    
+    const aiEl = document.getElementById('aiMsg');
+    let aiTimer;
+    let msgIndex = 0;
+    
+    // Idle animation
+    function startIdleCycle(){
+      clearInterval(aiTimer);
+      aiTimer = setInterval(()=>{
+        msgIndex = (msgIndex + 1) % idleMsgs.length;
+        aiEl.textContent = idleMsgs[msgIndex];
+      },3000);
+    }
+    startIdleCycle();
+    
+    // When typing
+    document.getElementById("urlInput").addEventListener("input", ()=>{
+      let val = document.getElementById("urlInput").value;
+      if(val.length > 0){
+        clearInterval(aiTimer);
+        aiEl.textContent = scanMsgs[Math.floor(Math.random()*scanMsgs.length)];
+      } else {
+        startIdleCycle();
+      }
+    });
+    function checkURL(){
+  let u = document.getElementById("urlInput").value.trim();
+  let box = document.getElementById("resultBox");
+
+  if(!u){
+    box.style.display="block";
+    box.innerHTML="⚠ Enter a URL";
+    return;
+  }
+
+  aiEl.textContent = "Connecting to threat intelligence server...";
+
+  box.style.display = "block";
+  box.innerHTML = "🔍 Scanning...";
+
+  fetch("http://127.0.0.1:5000/check-url", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ url: u })
+  })
+  .then(res => res.json())
+  .then(data => {
+
+    if(data.error){
+      box.style.display="block";
+      box.innerHTML="❌ Invalid URL";
+      aiEl.textContent="Invalid URL format detected.";
+      startIdleCycle();
+      return;
+    }
+
+    let className = "safe";
+    if(data.status === "LOW RISK") className = "warn";
+    if(data.status === "SUSPICIOUS") className = "warn";
+    if(data.status === "HIGH RISK") className = "danger";
+
+    let reasonsHTML = data.reasons.length
+      ? data.reasons.map(r => `<li>⚠ ${r}</li>`).join("")
+      : "<li>✅ No major issues detected</li>";
+
+    box.style.display = "block";
+    box.className = "result " + className;
+
+    box.innerHTML = `
+      <div><strong>Risk Level:</strong> ${data.status}</div>
+      <div><strong>Score:</strong> ${data.score}</div>
+      <div><strong>Confidence:</strong> ${data.confidence}%</div>
+
+      <hr>
+
+      <div><strong>URL Breakdown:</strong></div>
+      <div>Protocol: ${data.protocol}</div>
+      <div>Domain: ${data.domain}</div>
+      <div>Path: ${data.path}</div>
+
+      <hr>
+      <div><strong>Advanced Info:</strong></div>
+      <div>IP Address: ${data.ip}</div>
+      <div>Domain Age: ${data.domain_age}</div>
+      <div>Redirects: ${data.redirects}</div>
+      <div>VirusTotal: ${data.virustotal}</div>
+
+      <div><strong>Analysis:</strong></div>
+      <ul>${reasonsHTML}</ul>
+    `;
+
+    const finalMsgs = {
+      "SAFE": "No major threats detected.",
+      "LOW RISK": "Minor issues found. Proceed with caution.",
+      "SUSPICIOUS": "Potential phishing indicators detected.",
+      "HIGH RISK": "High probability of malicious URL."
+    };
+
+    aiEl.textContent = finalMsgs[data.status];
+
+    startIdleCycle();
+
+historyLog.push({
+  url: u,
+  status: data.status
+});
+
+let historyHTML = historyLog.slice(-5).map(h =>
+  `<div>${h.url} → ${h.status}</div>`
+).join("");
+
+let historyBox = document.getElementById("historyBox");
+historyBox.style.display = "block";
+historyBox.innerHTML = `
+  <div><strong>Recent Scans:</strong></div>
+  ${historyHTML}
+`;
+
+  })
+  .catch(()=>{
+    box.style.display="block";
+    box.innerHTML="⚠ Backend server not running";
+    aiEl.textContent="Connection to analysis engine failed.";
+  });
+  
+}
+    </script>
+
+</body>
+</html>
