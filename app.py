@@ -1,10 +1,28 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import re
-from urllib.parse import urlparse
+import os
+import requests
+import whois
+import socket
+from datetime import datetime
+from urllib.parse import urlparse, unquote
 
 app = Flask(__name__)
 CORS(app)
+
+# ================= PAGE ROUTES =================
+@app.route('/')
+def home():
+    return render_template('index.html')
+
+@app.route('/password')
+def password_page():
+    return render_template('password.html')
+
+@app.route('/url')
+def url_page():
+    return render_template('url.html')
 
 # ================= PASSWORD CHECK =================
 @app.route('/check-password', methods=['POST'])
@@ -34,12 +52,6 @@ def check_password():
 
 
 # ================= URL CHECK =================
-import requests
-import whois
-from datetime import datetime
-import socket
-from urllib.parse import unquote
-
 @app.route('/check-url', methods=['POST'])
 def check_url():
     data = request.json
@@ -51,10 +63,8 @@ def check_url():
     score = 0
     reasons = []
 
-    # -------- DECODE URL --------
     url = unquote(url)
 
-    # -------- BASIC CHECKS --------
     if not url.startswith("https"):
         score += 20
         reasons.append("Not using HTTPS")
@@ -77,7 +87,6 @@ def check_url():
         score += 10
         reasons.append("URL too long")
 
-    # -------- PARSE --------
     try:
         parsed = urlparse(url)
         domain = parsed.hostname or ""
@@ -86,19 +95,16 @@ def check_url():
     except:
         return jsonify({"error": "Invalid URL"})
 
-    # -------- IP DETECTION --------
     if re.search(r'\d+\.\d+\.\d+\.\d+', domain):
         score += 25
         reasons.append("Uses IP address")
 
-    # -------- DNS LOOKUP --------
     ip_address = "Unknown"
     try:
         ip_address = socket.gethostbyname(domain)
     except:
         reasons.append("DNS resolution failed")
 
-    # -------- DOMAIN AGE --------
     domain_age = "Unknown"
     try:
         w = whois.whois(domain)
@@ -118,10 +124,9 @@ def check_url():
         domain_age = "Unavailable"
         reasons.append("Domain age could not be determined")
 
-    # -------- VIRUSTOTAL --------
     vt_result = "Unavailable"
     try:
-        API_KEY = "d0b1c778dcd23ffc7cdcf572f1413156c932e9bd385d1d66291783863e4407f8" #whois api used
+        API_KEY = "your_api_key_here"
         headers = {"x-apikey": API_KEY}
 
         response = requests.post(
@@ -135,7 +140,6 @@ def check_url():
     except:
         vt_result = "Error"
 
-    # -------- REDIRECT CHECK --------
     redirects = 0
     try:
         r = requests.get(url, timeout=5)
@@ -147,7 +151,6 @@ def check_url():
     except:
         reasons.append("Unable to check redirects")
 
-    # -------- FINAL SCORE --------
     if score >= 70:
         status = "HIGH RISK"
     elif score >= 40:
@@ -176,4 +179,5 @@ def check_url():
 
 # ================= RUN SERVER =================
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
