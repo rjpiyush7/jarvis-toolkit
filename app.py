@@ -126,7 +126,7 @@ def check_url():
 
     vt_result = "Unavailable"
     try:
-        API_KEY = "your_api_key_here"
+        API_KEY = os.environ.get("VT_API_KEY")
         headers = {"x-apikey": API_KEY}
 
         response = requests.post(
