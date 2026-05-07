@@ -267,7 +267,7 @@ button:hover{
   box.style.display = "block";
   box.innerHTML = "🔍 Scanning...";
 
-  fetch("http://127.0.0.1:5000/check-url", {
+  fetch("/check-url", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
