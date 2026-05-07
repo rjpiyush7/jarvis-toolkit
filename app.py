@@ -28,7 +28,7 @@ def url_page():
 def xss_page():
     return render_template('xss.html')
 
-@app.route('/xss')
+@app.route('/keylogger')
 def keylogger_page():
     return render_template('keylogger.html')
 
