@@ -24,6 +24,22 @@ def password_page():
 def url_page():
     return render_template('url.html')
 
+@app.route('/xss')
+def xss_page():
+    return render_template('xss.html')
+
+@app.route('/xss')
+def keylogger_page():
+    return render_template('keylogger.html')
+
+@app.route('/bruteforce')
+def bruteforce_page():
+    return render_template('bruteforce.html')
+
+@app.route('/phishing')
+def phishing_page():
+    return render_template('phishing.html')
+
 # ================= PASSWORD CHECK =================
 @app.route('/check-password', methods=['POST'])
 def check_password():
